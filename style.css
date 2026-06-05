@@ -1,0 +1,191 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+html, body, main{
+    width: 100%;
+}
+
+html{
+    font-family: Elms Sans, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-primary-color);
+    color: var(--text-primary-color);
+}
+
+main section{
+    width: 100%;
+    padding: var(--padding-xl);
+    display: flex;
+    gap: var(--gutter-xl);
+}
+
+.btn{
+   padding: var(--padding-sm) var(--padding-lg); 
+   font-family: Elms Sans;
+   border: none;
+   outline: none;
+   border-radius: var(--border-radius-lg);
+   background-color: var(--bg-active-color);
+   color: var(--text-active-color);
+}
+
+#reset-btn{
+    background-color: var(--bg-danger-color);
+    color: var(--text-primary-color);
+    font-size: var(--font-size-md);
+}
+
+#download-btn{
+    background-color: var(--bg-success-color);
+    color: var(--text-primary-color);
+    font-size: var(--font-size-md);
+}
+
+main section .left{
+    display: flex;
+    flex-direction: column;
+    gap: var(--gutter-lg);
+    width: 70%;
+}
+
+main section .right{
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    padding: var(--padding-lg);
+    gap: var(--gutter-lg);
+    border-radius: var(--border-radius-xl);
+    background-color: var(--bg-secondary-color);
+}
+
+main section .top{
+    display: flex;
+    gap: var(--gutter-md);
+    justify-content: center;
+    align-items: center;
+}
+
+main section .bottom{
+    background-color: var(--bg-secondary-color);
+    width: 100%;
+    padding: var(--padding-xl);
+    aspect-ratio: 5/3;
+    border-radius: var(--border-radius-xl);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+main section .bottom .placeholder{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.7;
+    gap: var(--gutter-sm);
+}
+
+main section .bottom .placeholder i{
+    font-size: 8rem;
+}
+
+main section .bottom .placeholder p{
+    font-size: var(--font-size-lg );
+}
+
+main section .right .filter-options{
+    display: flex;
+    flex-direction: column;
+    gap: var(--gutter-md);
+}
+
+main section .right .filters{
+    width: 100%;
+}
+
+main section .right .filters input{
+    width: 100% ;
+    outline: none;
+    margin-top: var(--margin-sm);
+    appearance: none;
+}
+
+main section .right .filters input::-webkit-slider-runnable-track{
+    background-color: var(--bg-active-color);
+    height: 2px;
+}
+
+main section .right .filters input::-webkit-slider-thumb{
+    appearance: none;
+    width: 18px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: rgb(204, 95, 95);
+    margin-top: -6.5px;
+}
+
+canvas{
+    max-width: 90%;
+    max-height: 80vh;
+}
+
+#image-canvas{
+    display: none;
+}
+
+.presets{
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gutter-md);
+}
+
+.filter-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.preset-btn.active{
+    background-color: red;
+    color: var(--text-secondary-color);
+}
+
+.drop-overlay{
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+
+    opacity: 0;
+    pointer-events: none;
+
+    transition: 0.2s;
+}
+
+.drop-overlay.active{
+    opacity: 1;
+    backdrop-filter: blur(12px) saturate(140%);
+    border-radius: var(--border-radius-xl);
+}
+
+.drop-overlay i{
+    font-size: 5rem;
+    animation: float 1s infinite alternate;
+}
+
+@keyframes float{
+    from{
+        transform: translateY(-4px);
+    }
+    to{
+        transform: translateY(4px);
+    }
+}
