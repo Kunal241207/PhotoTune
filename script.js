@@ -102,8 +102,221 @@ const dropOverlay = document.querySelector('.drop-overlay')
 
 let file = null
 let image = null
+let originalImg = null
 
 let activePreset = null
+
+const crop = document.getElementById("crop-btn")
+const applyCrop = document.getElementById("apply-crop-btn")
+const cropBox = document.getElementById("crop-box")
+
+let isCropping = false
+let cropAction = null
+
+let startX = 0
+let startY = 0
+
+let mouseX = 0
+let mouseY = 0
+
+const cropRect = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0
+}
+
+function renderCropBox() {
+    cropBox.style.left = cropRect.x + "px"
+    cropBox.style.top = cropRect.y + "px"
+    cropBox.style.width = cropRect.width + "px"
+    cropBox.style.height = cropRect.height + "px"
+}
+
+function cancelCrop() {
+
+    isCropping = false
+    cropAction = null
+
+    cropRect.x = 0
+    cropRect.y = 0
+    cropRect.width = 0
+    cropRect.height = 0
+
+    crop.textContent = "Crop"
+    crop.style.backgroundColor = "var(--bg-active-color)"
+    crop.style.color = "var(--text-active-color)"
+
+    cropBox.style.display = "none"
+    applyCrop.style.display = "none"
+
+    imageCanvas.style.cursor = "default"
+}
+
+crop.addEventListener("click", () => {
+
+    if (!image) return
+
+    isCropping = !isCropping
+
+    if (isCropping) {
+
+        crop.textContent = "Cancel Crop"
+        crop.style.backgroundColor = "var(--bg-danger-color)"
+        crop.style.color = "#fff"
+
+        imageCanvas.style.cursor = "crosshair"
+
+    } else {
+        cancelCrop()
+    }
+})
+
+imageCanvas.addEventListener("mousedown", e => {
+    if (!isCropping) return
+
+    const rect = imageCanvas.getBoundingClientRect()
+    const parent = bottom.getBoundingClientRect()
+
+    startX = e.clientX - rect.left
+    startY = e.clientY - rect.top
+
+    cropRect.x = startX + rect.left - parent.left
+    cropRect.y = startY + rect.top - parent.top
+
+    cropRect.width = 0
+    cropRect.height = 0
+
+    cropAction = "draw"
+
+    cropBox.style.display = "block"
+    applyCrop.style.display = "none"
+
+    renderCropBox()
+})
+
+cropBox.addEventListener("mousedown", e => {
+    if (!isCropping) return
+
+    mouseX = e.clientX
+    mouseY = e.clientY
+
+    if (e.target.classList.contains("handle")) {
+        cropAction = e.target.classList[1]
+    } else {
+        cropAction = "move"
+    }
+
+    e.stopPropagation()
+})
+
+window.addEventListener("mousemove", e => {
+    if (!cropAction) return
+
+    const dx = e.clientX - mouseX
+    const dy = e.clientY - mouseY
+
+    if (cropAction === "draw") {
+
+        const rect = imageCanvas.getBoundingClientRect()
+        const parent = bottom.getBoundingClientRect()
+
+        const x = Math.max( 0, Math.min(e.clientX - rect.left, rect.width) )
+        const y = Math.max( 0, Math.min(e.clientY - rect.top, rect.height) )
+
+        cropRect.x = Math.min(startX, x) + rect.left - parent.left
+        cropRect.y = Math.min(startY, y) + rect.top - parent.top
+
+        cropRect.width = Math.abs(x - startX)
+        cropRect.height = Math.abs(y - startY)
+
+        renderCropBox()
+        return
+    }
+
+    if (cropAction === "move") {
+        cropRect.x += dx
+        cropRect.y += dy
+    }
+
+    if (cropAction === "se") {
+        cropRect.width = Math.max(30, cropRect.width + dx)
+        cropRect.height = Math.max(30, cropRect.height + dy)
+    }
+
+    if (cropAction === "sw") {
+        cropRect.x += dx
+        cropRect.width = Math.max(30, cropRect.width - dx)
+        cropRect.height = Math.max(30, cropRect.height + dy)
+    }
+
+    if (cropAction === "ne") {
+        cropRect.y += dy
+        cropRect.width = Math.max(30, cropRect.width + dx)
+        cropRect.height = Math.max(30, cropRect.height - dy)
+    }
+
+    if (cropAction === "nw") {
+        cropRect.x += dx
+        cropRect.y += dy
+        cropRect.width = Math.max(30, cropRect.width - dx)
+        cropRect.height = Math.max(30, cropRect.height - dy)
+    }
+
+    mouseX = e.clientX
+    mouseY = e.clientY
+
+    renderCropBox()
+})
+
+window.addEventListener("mouseup", () => {
+    if (
+        cropRect.width > 10 &&
+        cropRect.height > 10
+    ) {
+        applyCrop.style.display = "inline-block"
+    }
+
+    cropAction = null
+})
+
+applyCrop.addEventListener("click", () => {
+    if (!image) return
+
+    const rect = imageCanvas.getBoundingClientRect()
+    const parent = bottom.getBoundingClientRect()
+
+    const scaleX = imageCanvas.width / rect.width
+    const scaleY = imageCanvas.height / rect.height
+
+    const sx = (cropRect.x - (rect.left - parent.left)) * scaleX
+    const sy = (cropRect.y - (rect.top - parent.top)) * scaleY
+
+    const sw = cropRect.width * scaleX
+    const sh = cropRect.height * scaleY
+
+    const tempCanvas = document.createElement("canvas")
+    const tempCtx = tempCanvas.getContext("2d")
+
+    tempCanvas.width = sw
+    tempCanvas.height = sh
+
+    tempCtx.drawImage(imageCanvas,sx,sy,sw,sh,0,0,sw,sh)
+
+    const newImg = new Image()
+
+    newImg.onload = () => {
+        image = newImg
+
+        imageCanvas.width = sw
+        imageCanvas.height = sh
+
+        applyFilters()
+        cancelCrop()
+    }
+
+    newImg.src = tempCanvas.toDataURL()
+})
 
 Object.keys(filters).forEach(key => {
     const f = filters[key]
@@ -113,15 +326,19 @@ Object.keys(filters).forEach(key => {
 
 imageInput.addEventListener('change', (e) => {
     file = e.target.files[0]
+    resetEditor()
     const imgPlaceholder = document.querySelector('.placeholder')
     imgPlaceholder.style.display = "none"
-    imageCanvas.style.display = "block";
+    imageCanvas.style.display = "block"
     const img = new Image()
     image = img
+    originalImg = img
     img.src = URL.createObjectURL(file)
     img.onload = () => { 
         imageCanvas.width = img.width
         imageCanvas.height = img.height
+        imageCanvas.style.width = ''
+        imageCanvas.style.height = ''
         canvasCTX.drawImage(img,0,0)
     }
 })
@@ -144,6 +361,8 @@ bottom.addEventListener('drop', (e)=>{
 
     if(!file || !file.type.startsWith('image/')) return
 
+    resetEditor()
+
     const imgPlaceholder = document.querySelector('.placeholder')
     imgPlaceholder.style.display = "none"
 
@@ -151,12 +370,15 @@ bottom.addEventListener('drop', (e)=>{
 
     const img = new Image()
     image = img
+    originalImg = img
 
     img.src = URL.createObjectURL(file)
 
     img.onload = ()=>{
         imageCanvas.width = img.width
         imageCanvas.height = img.height
+        imageCanvas.style.width = ''
+        imageCanvas.style.height = ''
         canvasCTX.drawImage(img,0,0)
     }
 })
@@ -189,12 +411,16 @@ const defaults = {
     grayscale: 0,
     sepia: 0,
     opacity: 100,
-    invert: 0 
+    invert: 0
 }
 
-reset.addEventListener('click', ()=>{
-    Object.keys(filters).forEach(k => {
+function resetEditor() {
+    if (activePreset) {
+        activePreset.classList.remove("active")
+        activePreset = null
+    }
 
+    Object.keys(filters).forEach(k => {
         filters[k].value = defaults[k]
 
         const slider = document.getElementById(k)
@@ -203,6 +429,18 @@ reset.addEventListener('click', ()=>{
         const valueText = document.getElementById(`${k}-value`)
         valueText.textContent = defaults[k] + filters[k].unit
     })
+}
+
+reset.addEventListener('click', ()=>{
+    if (!originalImg) return
+
+    resetEditor()
+
+    image = originalImg
+    imageCanvas.width = originalImg.width
+    imageCanvas.height = originalImg.height
+    imageCanvas.style.width = ''
+    imageCanvas.style.height = ''
 
     applyFilters()
 })

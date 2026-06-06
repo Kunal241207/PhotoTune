@@ -71,12 +71,13 @@ main section .bottom{
     background-color: var(--bg-secondary-color);
     width: 100%;
     padding: var(--padding-xl);
-    aspect-ratio: 5/3;
+    min-height: 600px;
     border-radius: var(--border-radius-xl);
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
+    overflow: hidden;
 }
 
 main section .bottom .placeholder{
@@ -188,4 +189,55 @@ canvas{
     to{
         transform: translateY(4px);
     }
+}
+
+#crop-btn{
+    font-size: var(--font-size-md);
+}
+
+#apply-crop-btn {
+    background-color: var(--bg-success-color);
+    color: var(--text-primary-color);
+    font-size: var(--font-size-md);
+}
+
+#crop-box{
+    position: absolute;
+    display: none;
+    border: 2px solid white;
+    background: rgba(255,255,255,.04);
+    box-shadow: 0 0 0 9999px rgba(0,0,0,.55);
+    z-index: 10;
+}
+
+.handle{
+    width: 12px;
+    height: 12px;
+    background: var(--bg-active-color);
+    border-radius: 50%;
+    position: absolute;
+}
+
+.nw{
+    top:-6px;
+    left:-6px;
+    cursor:nwse-resize;
+}
+
+.ne{
+    top:-6px;
+    right:-6px;
+    cursor:nesw-resize;
+}
+
+.sw{
+    bottom:-6px;
+    left:-6px;
+    cursor:nesw-resize;
+}
+
+.se{
+    bottom:-6px;
+    right:-6px;
+    cursor:nwse-resize;
 }

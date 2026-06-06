@@ -19,6 +19,8 @@
                         <input type="file" id="image-inp" accept="image/*" hidden>
                     </label>
                     <button class="btn" id="reset-btn">Reset</button>
+                    <button class="btn" id="crop-btn">Crop</button>
+                    <button class="btn" id="apply-crop-btn" style="display: none;">Apply</button>
                     <button class="btn" id="download-btn">Download</button>
                 </div>
                 <div class="bottom">
@@ -31,6 +33,12 @@
                         <p>Drop image here</p>
                     </div>
                     <canvas id="image-canvas"></canvas>
+                    <div id="crop-box">
+                        <div class="handle nw"></div>
+                        <div class="handle ne"></div>
+                        <div class="handle sw"></div>
+                        <div class="handle se"></div>
+                    </div>
                 </div>
             </div>
 
